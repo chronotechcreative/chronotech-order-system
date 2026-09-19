@@ -14,7 +14,7 @@ const ALLOWED_EXTENSIONS = [
     "jpg", "jpeg", "png", "webp",
     "pdf",
     "step", "stp", "iges", "igs",
-    "sldprt", "sldasm",
+    "sldprt", "sldasm", "prt", 
     "dwg", "dxf",
     "zip", "7z"
 ];
@@ -33,7 +33,7 @@ const DANGEROUS_MIME_SIGNATURES = [
     "application/x-msi"
 ];
 
-const STORAGE_BUCKET = "reference-files";
+const STORAGE_BUCKET = "chronotech-bucket";
 
 
 /* ---------------------------------------------------------
