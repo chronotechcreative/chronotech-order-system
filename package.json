@@ -1,0 +1,11 @@
+{
+  "name": "chronotech-order-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chronotech Creative Client Project Order Form — Vercel serverless API + Supabase (Postgres + Storage).",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "busboy": "^1.6.0",
+    "file-type": "^16.5.4"
+  }
+}

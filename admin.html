@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin — Project Review | Chronotech Creative</title>
+
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+    <header class="admin-header">
+        <div class="admin-container">
+            <h1>Chronotech Creative — Project Review</h1>
+            <p id="projectCount">Loading projects…</p>
+        </div>
+    </header>
+
+    <main class="admin-container">
+
+        <!-- LIST VIEW -->
+        <section id="listView">
+
+            <table class="project-table">
+                <thead>
+                    <tr>
+                        <th>Project ID</th>
+                        <th>Client / Company</th>
+                        <th>Project Name</th>
+                        <th>Date</th>
+                        <th>Files</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="projectTableBody">
+                    <!-- rows injected by admin.js -->
+                </tbody>
+            </table>
+
+            <p id="emptyState" class="empty-state" hidden>
+                No project submissions yet.
+            </p>
+
+        </section>
+
+        <!-- DETAIL VIEW -->
+        <section id="detailView" hidden>
+
+            <button id="backButton" class="back-button">&larr; Back to list</button>
+
+            <div class="detail-card">
+
+                <div class="detail-top">
+                    <div>
+                        <h2 id="detailProjectId"></h2>
+                        <p id="detailCreatedAt" class="muted"></p>
+                    </div>
+
+                    <select id="statusSelect">
+                        <option value="New">New</option>
+                        <option value="Reviewed">Reviewed</option>
+                        <option value="Quoted">Quoted</option>
+                        <option value="Won">Won</option>
+                        <option value="Lost">Lost</option>
+                    </select>
+                </div>
+
+                <h3>Project Data</h3>
+                <div id="detailFormData" class="detail-grid"></div>
+
+                <h3>Reference Files</h3>
+                <ul id="detailFiles" class="detail-files"></ul>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="admin.js"></script>
+
+</body>
+
+</html>
