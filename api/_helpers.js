@@ -146,7 +146,7 @@ async function validateAndUploadFile(projectId, file) {
         return { ok: false, message: '"' + file.filename + '" is over the 15MB limit.' };
     }
 
-    const detected = await fileType.FromBuffer(file.buffer);
+    const detected = await FileType.fromBuffer(file.buffer);
 
     if (detected && DANGEROUS_MIME_SIGNATURES.includes(detected.mime)) {
         return {
