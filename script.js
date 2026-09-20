@@ -1,3 +1,250 @@
+/* =============================================================
+   PORTFOLIO SECTION (index.html)
+   ============================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const portfolioGrid = document.getElementById("portfolioGrid");
+
+    if (!portfolioGrid) {
+        return; // halaman ini tidak punya section portfolio
+    }
+
+
+    /* =========================================================
+       DATA PORTFOLIO
+       Cara menambah project baru: copy salah satu object di
+       bawah ini (dari tanda { sampai }), tempel di baris baru,
+       lalu ganti isinya:
+
+       - title       : nama project
+       - category    : harus sama persis dengan salah satu nama
+                        service di section "Services" (supaya
+                        filter bekerja), contoh: "3D CAD Design"
+       - image       : path ke file gambar. Taruh file gambarnya
+                        di folder "assets/portfolio/" lalu tulis
+                        nama filenya di sini, contoh:
+                        "assets/portfolio/nama-file.jpg"
+       - description : deskripsi singkat 1-3 kalimat
+
+       Kalau file gambar belum ada / belum diupload, kartu akan
+       otomatis menampilkan kotak placeholder bertuliskan nama
+       kategori — jadi tidak akan tampil sebagai gambar rusak.
+       ========================================================= */
+
+    const portfolioItems = [
+
+        {
+            title: "Hooklift Assembly Design",
+            category: "3D CAD Design",
+            image: "assets/portfolio/hooklift-assembly.png",
+            description: "Pemodelan 3D assembly rangka hooklift, mencakup detail mekanisme swing arm, hook, dan sistem hidrolik untuk menurunkan bak pada truck"
+        },
+
+        {
+            title: "Sheet Metal Drawing",
+            category: "Technical Drawing",
+            image: "assets/portfolio/produk-drawing.png",
+            description: "Gambar teknik 2D bracket sheet metal lengkap dengan front view, side view, top view, dan flatten view, disertai dimensi, toleransi, serta catatan bending yang akan melalui proses die stamping."
+        },
+
+        {
+            title: "Bin Truck",
+            category: "Product Design",
+            image: "assets/portfolio/dump-truck.png",
+            description: "Desain produk bin truck, mencakup konstruksi bak, mekanisme hidrolik, dan penyesuaian dimensi terhadap chassis kendaraan sesuai dengan kebutuhan costumer."
+        },
+
+        {
+            title: "Drilling Fixture",
+            category: "Jig & Fixture",
+            image: "assets/portfolio/drilling-fixture.png",
+            description: "Perancangan drilling fixture dengan sistem pneumatic untuk menahan dan memposisi part secara presisi selama proses pengeboran, sehingga akurasi lubang tetap konsisten dan efisiensi proses produksi"
+        },
+
+        {
+            title: "Injection Mold",
+            category: "Mold & Dies",
+            image: "assets/portfolio/injection-mold.png",
+            description: "Desain mold injeksi plastik berupa core dan cavity, mempertimbangkan parting line, sistem ejector, dan jalur pendinginan untuk mendukung proses produksi massal."
+        },
+
+        {
+            title: "Automated Cutting Machine",
+            category: "Special Purpose Machines",
+            image: "assets/portfolio/assembly-machine.png",
+            description: "Desain mekanikal mesin cutting otomatis dengan sistem conveyor dan panel pelindung, dirancang untuk meningkatkan keselamatan operator serta efisiensi proses pemotongan."
+        }
+
+    ];
+
+
+    /* =========================================================
+       BUILD FILTER LIST (otomatis dari kategori yang dipakai)
+       ========================================================= */
+
+    const filtersContainer = document.getElementById("portfolioFilters");
+    const emptyState = document.getElementById("portfolioEmpty");
+
+    const uniqueCategories = Array.from(
+        new Set(portfolioItems.map(function (item) { return item.category; }))
+    );
+
+    const categories = ["All"].concat(uniqueCategories);
+
+    let activeCategory = "All";
+
+
+    function renderFilters() {
+
+        filtersContainer.innerHTML = "";
+
+        categories.forEach(function (category) {
+
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "portfolio-filter-btn" + (category === activeCategory ? " active" : "");
+            btn.textContent = category;
+
+            btn.addEventListener("click", function () {
+                activeCategory = category;
+                renderFilters();
+                renderGrid();
+            });
+
+            filtersContainer.appendChild(btn);
+        });
+    }
+
+
+    /* =========================================================
+       BUILD GRID
+       ========================================================= */
+
+    function buildImage(item) {
+
+        const wrap = document.createElement("div");
+        wrap.className = "portfolio-card-image-wrap";
+
+        const img = document.createElement("img");
+        img.src = item.image;
+        img.alt = item.title;
+        img.loading = "lazy";
+
+        img.addEventListener("error", function () {
+
+            wrap.innerHTML = "";
+
+            const placeholder = document.createElement("div");
+            placeholder.className = "portfolio-card-image-placeholder";
+            placeholder.textContent = item.category.toUpperCase();
+
+            wrap.appendChild(placeholder);
+        });
+
+        wrap.appendChild(img);
+
+        return wrap;
+    }
+
+
+    function renderGrid() {
+
+        portfolioGrid.innerHTML = "";
+
+        const filteredItems = portfolioItems.filter(function (item) {
+            return activeCategory === "All" || item.category === activeCategory;
+        });
+
+        if (filteredItems.length === 0) {
+            emptyState.hidden = false;
+            return;
+        }
+
+        emptyState.hidden = true;
+
+        filteredItems.forEach(function (item) {
+
+            const card = document.createElement("article");
+            card.className = "portfolio-card";
+
+            card.appendChild(buildImage(item));
+
+            const body = document.createElement("div");
+            body.className = "portfolio-card-body";
+            body.innerHTML = `
+                <span class="portfolio-card-category">${item.category}</span>
+                <h3>${item.title}</h3>
+                <p>${item.description}</p>
+            `;
+
+            card.appendChild(body);
+
+            card.addEventListener("click", function () {
+                openLightbox(item);
+            });
+
+            portfolioGrid.appendChild(card);
+        });
+    }
+
+
+    /* =========================================================
+       LIGHTBOX
+       ========================================================= */
+
+    const lightbox = document.getElementById("portfolioLightbox");
+    const lightboxOverlay = document.getElementById("portfolioLightboxOverlay");
+    const lightboxClose = document.getElementById("portfolioLightboxClose");
+    const lightboxImage = document.getElementById("portfolioLightboxImage");
+    const lightboxCategory = document.getElementById("portfolioLightboxCategory");
+    const lightboxTitle = document.getElementById("portfolioLightboxTitle");
+    const lightboxDescription = document.getElementById("portfolioLightboxDescription");
+
+
+    function openLightbox(item) {
+
+        lightboxImage.src = item.image;
+        lightboxImage.alt = item.title;
+        lightboxCategory.textContent = item.category;
+        lightboxTitle.textContent = item.title;
+        lightboxDescription.textContent = item.description;
+
+        lightbox.hidden = false;
+        document.body.style.overflow = "hidden";
+    }
+
+
+    function closeLightbox() {
+        lightbox.hidden = true;
+        document.body.style.overflow = "";
+    }
+
+
+    lightboxOverlay.addEventListener("click", closeLightbox);
+    lightboxClose.addEventListener("click", closeLightbox);
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !lightbox.hidden) {
+            closeLightbox();
+        }
+    });
+
+
+    /* =========================================================
+       INIT
+       ========================================================= */
+
+    renderFilters();
+    renderGrid();
+
+});
+
+
+/* =============================================================
+   PROJECT ORDER FORM (project.html)
+   ============================================================= */
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const projectForm = document.getElementById("projectForm");
@@ -11,8 +258,8 @@ document.addEventListener("DOMContentLoaded", function () {
        CONFIG
        ========================================================= */
 
-    // API is same-origin now that frontend and backend both live on Vercel.
-    // Same-origin now that the frontend and API both live on Vercel.
+    // Point this at your backend once deployed, e.g.
+    // "https://api.chronotechcreative.com/api/projects"
     const UPLOAD_API_URL = "/api/projects";
 
     const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
@@ -1033,7 +1280,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const message = `
 
-*SYNCHROTECH CREATIVE*
+*CHRONOTECH CREATIVE*
 *INTEGRATED ENGINEERING & MANUFACTURING DESIGN SOLUTIONS*
 
 *CLIENT PROJECT ORDER FORM*
@@ -1152,7 +1399,7 @@ ${approval}
 
 ━━━━━━━━━━━━━━━━━━━━━━
 
-*SYNCHROTECH CREATIVE*
+*CHRONOTECH CREATIVE*
 *FROM IDEAS TO ENGINEERING SOLUTIONS*
 
 Thank you for your project request.
@@ -1189,192 +1436,5 @@ We will review the information and files and contact you for further discussion 
         );
 
     });
-
-});
-
-
-/* =========================================================
-   PORTFOLIO GRID + FILTER + LIGHTBOX
-   (this runs independently, so it also works on pages like
-   index.html that don't have a #projectForm)
-   ========================================================= */
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const portfolioGrid = document.getElementById("portfolioGrid");
-
-    if (!portfolioGrid) {
-        return;
-    }
-
-    const portfolioFilters = document.getElementById("portfolioFilters");
-    const portfolioEmpty = document.getElementById("portfolioEmpty");
-
-    const lightbox = document.getElementById("portfolioLightbox");
-    const lightboxOverlay = document.getElementById("portfolioLightboxOverlay");
-    const lightboxClose = document.getElementById("portfolioLightboxClose");
-    const lightboxImage = document.getElementById("portfolioLightboxImage");
-    const lightboxCategory = document.getElementById("portfolioLightboxCategory");
-    const lightboxTitle = document.getElementById("portfolioLightboxTitle");
-    const lightboxDescription = document.getElementById("portfolioLightboxDescription");
-
-
-    const portfolioItems = [
-        {
-            image: "assets/portfolio/produk-drawing.png",
-            title: "Product Drawing",
-            category: "Technical Drawing",
-            description: "Detailed 2D technical drawing with dimensions and tolerances for a manufactured part."
-        },
-        {
-            image: "assets/portfolio/assembly-machine.png",
-            title: "Assembly Machine",
-            category: "Special Purpose Machines",
-            description: "Concept and mechanical design for a custom production assembly machine."
-        },
-        {
-            image: "assets/portfolio/drilling-fixture.png",
-            title: "Drilling Fixture",
-            category: "Jig & Fixture",
-            description: "Drilling fixture design to support accurate, repeatable production drilling operations."
-        },
-        {
-            image: "assets/portfolio/dump-truck.png",
-            title: "Dump Truck Component",
-            category: "Product Design",
-            description: "Mechanical design and development support for a heavy equipment component."
-        },
-        {
-            image: "assets/portfolio/hooklift-assembly.png",
-            title: "Hooklift Assembly",
-            category: "Special Purpose Machines",
-            description: "Design of a hooklift assembly mechanism for special purpose vehicle applications."
-        },
-        {
-            image: "assets/portfolio/injection-mold.png",
-            title: "Injection Mold",
-            category: "Mold & Dies",
-            description: "Engineering design support for an injection mold used in plastic part production."
-        }
-    ];
-
-
-    let activeCategory = "All";
-
-
-    function getCategories() {
-
-        const categories = ["All"];
-
-        portfolioItems.forEach(function (item) {
-            if (!categories.includes(item.category)) {
-                categories.push(item.category);
-            }
-        });
-
-        return categories;
-    }
-
-
-    function renderFilters() {
-
-        if (!portfolioFilters) {
-            return;
-        }
-
-        portfolioFilters.innerHTML = "";
-
-        getCategories().forEach(function (category) {
-
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "portfolio-filter-btn";
-            button.textContent = category;
-
-            if (category === activeCategory) {
-                button.classList.add("active");
-            }
-
-            button.addEventListener("click", function () {
-                activeCategory = category;
-                renderFilters();
-                renderGrid();
-            });
-
-            portfolioFilters.appendChild(button);
-        });
-    }
-
-
-    function renderGrid() {
-
-        portfolioGrid.innerHTML = "";
-
-        const filteredItems = activeCategory === "All"
-            ? portfolioItems
-            : portfolioItems.filter(function (item) {
-                return item.category === activeCategory;
-            });
-
-        if (filteredItems.length === 0) {
-            if (portfolioEmpty) portfolioEmpty.hidden = false;
-            return;
-        }
-
-        if (portfolioEmpty) portfolioEmpty.hidden = true;
-
-        filteredItems.forEach(function (item) {
-
-            const card = document.createElement("div");
-            card.className = "portfolio-card";
-
-            card.innerHTML = `
-                <img src="${item.image}" alt="${item.title}" loading="lazy">
-                <div class="portfolio-card-info">
-                    <span class="portfolio-card-category">${item.category}</span>
-                    <h3>${item.title}</h3>
-                </div>
-            `;
-
-            card.addEventListener("click", function () {
-                openLightbox(item);
-            });
-
-            portfolioGrid.appendChild(card);
-        });
-    }
-
-
-    function openLightbox(item) {
-
-        if (!lightbox) return;
-
-        lightboxImage.src = item.image;
-        lightboxImage.alt = item.title;
-        lightboxCategory.textContent = item.category;
-        lightboxTitle.textContent = item.title;
-        lightboxDescription.textContent = item.description;
-
-        lightbox.hidden = false;
-    }
-
-
-    function closeLightbox() {
-        if (!lightbox) return;
-        lightbox.hidden = true;
-        lightboxImage.src = "";
-    }
-
-
-    if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
-    if (lightboxOverlay) lightboxOverlay.addEventListener("click", closeLightbox);
-
-    document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape") closeLightbox();
-    });
-
-
-    renderFilters();
-    renderGrid();
 
 });
