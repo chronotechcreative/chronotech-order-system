@@ -123,17 +123,15 @@ module.exports = async function handler(req, res) {
     try {
 
         if (req.method === "GET") {
-            return await listProjects(req, res);
-        }
-
-        if (req.method === "GET") {
             if (!isAdminAuthorized(req)) {
                 return res.status(401).json({ message: "Unauthorized." });
             }
             return await listProjects(req, res);
         }
-            
-        
+
+        if (req.method === "POST") {
+            return await createProject(req, res);
+        }
 
         res.status(405).json({ message: "Method not allowed." });
 
@@ -142,5 +140,3 @@ module.exports = async function handler(req, res) {
         res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
     }
 };
-
-module.exports.config = config;
