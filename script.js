@@ -11,8 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
        CONFIG
        ========================================================= */
 
-    // Point this at your backend once deployed, e.g.
-    // "https://api.synchrotechcreative.com/api/projects"
+    // API is same-origin now that frontend and backend both live on Vercel.
     // Same-origin now that the frontend and API both live on Vercel.
     const UPLOAD_API_URL = "/api/projects";
 
@@ -1190,5 +1189,192 @@ We will review the information and files and contact you for further discussion 
         );
 
     });
+
+});
+
+
+/* =========================================================
+   PORTFOLIO GRID + FILTER + LIGHTBOX
+   (this runs independently, so it also works on pages like
+   index.html that don't have a #projectForm)
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const portfolioGrid = document.getElementById("portfolioGrid");
+
+    if (!portfolioGrid) {
+        return;
+    }
+
+    const portfolioFilters = document.getElementById("portfolioFilters");
+    const portfolioEmpty = document.getElementById("portfolioEmpty");
+
+    const lightbox = document.getElementById("portfolioLightbox");
+    const lightboxOverlay = document.getElementById("portfolioLightboxOverlay");
+    const lightboxClose = document.getElementById("portfolioLightboxClose");
+    const lightboxImage = document.getElementById("portfolioLightboxImage");
+    const lightboxCategory = document.getElementById("portfolioLightboxCategory");
+    const lightboxTitle = document.getElementById("portfolioLightboxTitle");
+    const lightboxDescription = document.getElementById("portfolioLightboxDescription");
+
+
+    const portfolioItems = [
+        {
+            image: "assets/portfolio/produk-drawing.png",
+            title: "Product Drawing",
+            category: "Technical Drawing",
+            description: "Detailed 2D technical drawing with dimensions and tolerances for a manufactured part."
+        },
+        {
+            image: "assets/portfolio/assembly-machine.png",
+            title: "Assembly Machine",
+            category: "Special Purpose Machines",
+            description: "Concept and mechanical design for a custom production assembly machine."
+        },
+        {
+            image: "assets/portfolio/drilling-fixture.png",
+            title: "Drilling Fixture",
+            category: "Jig & Fixture",
+            description: "Drilling fixture design to support accurate, repeatable production drilling operations."
+        },
+        {
+            image: "assets/portfolio/dump-truck.png",
+            title: "Dump Truck Component",
+            category: "Product Design",
+            description: "Mechanical design and development support for a heavy equipment component."
+        },
+        {
+            image: "assets/portfolio/hooklift-assembly.png",
+            title: "Hooklift Assembly",
+            category: "Special Purpose Machines",
+            description: "Design of a hooklift assembly mechanism for special purpose vehicle applications."
+        },
+        {
+            image: "assets/portfolio/injection-mold.png",
+            title: "Injection Mold",
+            category: "Mold & Dies",
+            description: "Engineering design support for an injection mold used in plastic part production."
+        }
+    ];
+
+
+    let activeCategory = "All";
+
+
+    function getCategories() {
+
+        const categories = ["All"];
+
+        portfolioItems.forEach(function (item) {
+            if (!categories.includes(item.category)) {
+                categories.push(item.category);
+            }
+        });
+
+        return categories;
+    }
+
+
+    function renderFilters() {
+
+        if (!portfolioFilters) {
+            return;
+        }
+
+        portfolioFilters.innerHTML = "";
+
+        getCategories().forEach(function (category) {
+
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "portfolio-filter-btn";
+            button.textContent = category;
+
+            if (category === activeCategory) {
+                button.classList.add("active");
+            }
+
+            button.addEventListener("click", function () {
+                activeCategory = category;
+                renderFilters();
+                renderGrid();
+            });
+
+            portfolioFilters.appendChild(button);
+        });
+    }
+
+
+    function renderGrid() {
+
+        portfolioGrid.innerHTML = "";
+
+        const filteredItems = activeCategory === "All"
+            ? portfolioItems
+            : portfolioItems.filter(function (item) {
+                return item.category === activeCategory;
+            });
+
+        if (filteredItems.length === 0) {
+            if (portfolioEmpty) portfolioEmpty.hidden = false;
+            return;
+        }
+
+        if (portfolioEmpty) portfolioEmpty.hidden = true;
+
+        filteredItems.forEach(function (item) {
+
+            const card = document.createElement("div");
+            card.className = "portfolio-card";
+
+            card.innerHTML = `
+                <img src="${item.image}" alt="${item.title}" loading="lazy">
+                <div class="portfolio-card-info">
+                    <span class="portfolio-card-category">${item.category}</span>
+                    <h3>${item.title}</h3>
+                </div>
+            `;
+
+            card.addEventListener("click", function () {
+                openLightbox(item);
+            });
+
+            portfolioGrid.appendChild(card);
+        });
+    }
+
+
+    function openLightbox(item) {
+
+        if (!lightbox) return;
+
+        lightboxImage.src = item.image;
+        lightboxImage.alt = item.title;
+        lightboxCategory.textContent = item.category;
+        lightboxTitle.textContent = item.title;
+        lightboxDescription.textContent = item.description;
+
+        lightbox.hidden = false;
+    }
+
+
+    function closeLightbox() {
+        if (!lightbox) return;
+        lightbox.hidden = true;
+        lightboxImage.src = "";
+    }
+
+
+    if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
+    if (lightboxOverlay) lightboxOverlay.addEventListener("click", closeLightbox);
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeLightbox();
+    });
+
+
+    renderFilters();
+    renderGrid();
 
 });
