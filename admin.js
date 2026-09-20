@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    const API_BASE = "https://sychrotech-backend-production.up.railway.app";
+    // API sekarang satu domain sama frontend (Vercel), jadi path relatif saja.
+    const API_BASE = "";
+
+    const ADMIN_KEY_STORAGE = "chronotech_admin_key";
 
     const listView = document.getElementById("listView");
     const detailView = document.getElementById("detailView");
@@ -18,8 +21,27 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentProjectId = null;
 
 
-    function formatFileSize(bytes) {
+    function getAdminKey() {
+        let key = sessionStorage.getItem(ADMIN_KEY_STORAGE);
+        if (!key) {
+            key = prompt("Masukkan password admin:");
+            if (key) sessionStorage.setItem(ADMIN_KEY_STORAGE, key);
+        }
+        return key;
+    }
 
+    function authHeaders() {
+        return { "x-admin-key": getAdminKey() || "" };
+    }
+
+    function handleUnauthorized() {
+        sessionStorage.removeItem(ADMIN_KEY_STORAGE);
+        alert("Password salah atau belum diisi. Silakan coba lagi.");
+        location.reload();
+    }
+
+
+    function formatFileSize(bytes) {
         if (bytes < 1024) return bytes + " B";
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
         return (bytes / (1024 * 1024)).toFixed(1) + " MB";
@@ -27,7 +49,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function formatDate(iso) {
-
         const date = new Date(iso);
         return date.toLocaleString("id-ID", {
             day: "2-digit", month: "short", year: "numeric",
@@ -38,7 +59,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function loadProjects() {
 
-        const res = await fetch(API_BASE + "/api/projects");
+        const res = await fetch(API_BASE + "/api/projects", { headers: authHeaders() });
+
+        if (res.status === 401) {
+            return handleUnauthorized();
+        }
+
         const projects = await res.json();
 
         projectCount.textContent = projects.length + " project(s) submitted";
@@ -80,7 +106,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function showDetail(projectId) {
 
-        const res = await fetch(API_BASE + "/api/projects/" + projectId);
+        const res = await fetch(API_BASE + "/api/projects/" + projectId, { headers: authHeaders() });
+
+        if (res.status === 401) {
+            return handleUnauthorized();
+        }
 
         if (!res.ok) {
             alert("Project not found.");
@@ -123,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const li = document.createElement("li");
                 li.innerHTML = `
-                    <a href="${API_BASE}${file.url}" target="_blank" rel="noopener">${file.originalName}</a>
+                    <a href="${file.url}" target="_blank" rel="noopener">${file.originalName}</a>
                     <span class="file-size">${formatFileSize(file.size)}</span>
                 `;
 
@@ -145,11 +175,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     statusSelect.addEventListener("change", async function () {
 
-        await fetch(API_BASE + "/api/projects/" + currentProjectId + "/status", {
+        const res = await fetch(API_BASE + "/api/projects/" + currentProjectId + "/status", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: Object.assign({ "Content-Type": "application/json" }, authHeaders()),
             body: JSON.stringify({ status: statusSelect.value })
         });
+
+        if (res.status === 401) {
+            return handleUnauthorized();
+        }
     });
 
 

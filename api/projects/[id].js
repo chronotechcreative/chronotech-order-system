@@ -4,6 +4,7 @@
    ========================================================= */
 
 const { supabase } = require("../_supabase");
+const { isAdminAuthorized } = require("../_auth");
 
 module.exports = async function handler(req, res) {
 
@@ -11,6 +12,10 @@ module.exports = async function handler(req, res) {
 
     if (req.method !== "GET") {
         return res.status(405).json({ message: "Method not allowed." });
+    }
+
+    if (!isAdminAuthorized(req)) {
+        return res.status(401).json({ message: "Unauthorized." });
     }
 
     const { data: project, error } = await supabase

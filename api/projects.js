@@ -7,7 +7,7 @@
 
 const { supabase } = require("./_supabase");
 const { generateProjectId, parseMultipartForm, validateAndUploadFile } = require("./_helpers");
-
+const { isAdminAuthorized } = require("./_auth");
 // Vercel: disable the default JSON body parser so Busboy can
 // read the raw multipart stream itself.
 const config = { api: { bodyParser: false } };
@@ -126,9 +126,14 @@ module.exports = async function handler(req, res) {
             return await listProjects(req, res);
         }
 
-        if (req.method === "POST") {
-            return await createProject(req, res);
+        if (req.method === "GET") {
+            if (!isAdminAuthorized(req)) {
+                return res.status(401).json({ message: "Unauthorized." });
+            }
+            return await listProjects(req, res);
         }
+            
+        
 
         res.status(405).json({ message: "Method not allowed." });
 
